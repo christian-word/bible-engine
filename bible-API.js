@@ -1,112 +1,76 @@
-﻿class BibleAPI {
-    constructor() {
-        this.jsonUrl = this.determineJsonUrl();
-        this.data = null;
-        this.ready = this.load();
-    }
-
-    determineJsonUrl() {
-        const src = document.currentScript?.src || '';
-        if (src.includes('raw.githubusercontent.com/christian-word/bible-engine/main/')) {
-            return src.replace(/[^\/]+$/, '') + 'bible_ua.json';
-        }
-        return './bible_ua.json';
+class BibleAPI {
+    constructor(jsonUrl = 'https://raw.githubusercontent.com/christian-word/bible-engine/main/bible_ua.json') {
+        this.jsonUrl = jsonUrl;
+        this.data = [];
     }
 
     async load() {
-        const res = await fetch(this.jsonUrl);
-        if (!res.ok) throw new Error(`Failed to load JSON (${res.status})`);
-        this.data = await res.json();
+        const response = await fetch(this.jsonUrl);
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки JSON: ${response.status} ${response.statusText}`);
+        }
+        this.data = await response.json();
+        console.log("Библия успешно загружена");
     }
 
-    async getBooks() {
-        await this.ready;
-        return this.data.map(b => ({ number: b.number, name: b.name, shortName: b.shortName }));
+    getBooks() {
+        return this.data.map(book => ({
+            number: book.number,
+            shortName: book.shortName,
+            name: book.name
+        }));
     }
 
-    async getChapters(bookNumber) {
-        await this.ready;
+    getChapters(bookNumber) {
         const book = this.data.find(b => b.number === String(bookNumber));
         return book ? book.chapters.map(ch => ch.number) : [];
     }
 
-    async getVerses(bookNumber, chapterNumber) {
-        await this.ready;
+    getVerses(bookNumber, chapterNumber) {
         const book = this.data.find(b => b.number === String(bookNumber));
-        const ch = book?.chapters.find(c => c.number === String(chapterNumber));
-        return ch ? ch.verses : [];
+        if (!book) return [];
+        const chapter = book.chapters.find(ch => ch.number === String(chapterNumber));
+        return chapter ? chapter.verses : [];
     }
 
-    async getVerse(bookNumber, chapterNumber, verseNumber) {
-        const verses = await this.getVerses(bookNumber, chapterNumber);
+    getVerse(bookNumber, chapterNumber, verseNumber) {
+        const verses = this.getVerses(bookNumber, chapterNumber);
         return verses.find(v => v.number === String(verseNumber)) || null;
     }
 
-    async getVersesRange(bookNumber, chapterNumber, rangeStr) {
-        const verses = await this.getVerses(bookNumber, chapterNumber);
-        const parts = rangeStr.split(',').map(s => s.trim());
-        const res = [];
-        for (const p of parts) {
-            if (p.includes('-')) {
-                const [start, end] = p.split('-').map(Number);
-                for (let i = start; i <= end; i++) {
-                    const v = verses.find(x => Number(x.number) === i);
-                    if (v) res.push(v);
-                }
-            } else {
-                const num = Number(p);
-                const v = verses.find(x => Number(x.number) === num);
-                if (v) res.push(v);
-            }
-        }
-        return res;
+    getVerseRange(bookNumber, chapterNumber, startVerse, endVerse) {
+        const verses = this.getVerses(bookNumber, chapterNumber);
+        return verses.filter(v => {
+            const num = parseInt(v.number);
+            return num >= startVerse && num <= endVerse;
+        });
     }
 
-    async search(query) {
-        await this.ready;
-        const q = query.toLowerCase();
-        const results = [];
-        for (const b of this.data) {
-            for (const ch of b.chapters) {
-                for (const v of ch.verses) {
-                    if (v.text.toLowerCase().includes(q)) {
-                        results.push({ book: b.name, chapter: ch.number, verse: v.number, text: v.text });
+    search(query) {
+        const regex = new RegExp(query, "i");
+        let results = [];
+        this.data.forEach(book => {
+            book.chapters.forEach(chapter => {
+                chapter.verses.forEach(verse => {
+                    if (regex.test(verse.text)) {
+                        results.push({
+                            book: book.name,
+                            chapter: chapter.number,
+                            verse: verse.number,
+                            text: verse.text
+                        });
                     }
-                }
-            }
-        }
+                });
+            });
+        });
         return results;
-    }
-
-    async searchRegex(pattern) {
-        await this.ready;
-        let regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, 'giu');
-        const results = [];
-        for (const b of this.data) {
-            for (const ch of b.chapters) {
-                for (const v of ch.verses) {
-                    if (regex.test(v.text)) {
-                        results.push({ book: b.name, chapter: ch.number, verse: v.number, text: v.text });
-                    }
-                }
-            }
-        }
-        return results;
-    }
-
-    async getRandomVerse() {
-        await this.ready;
-        const bk = this.data[Math.floor(Math.random() * this.data.length)];
-        const ch = bk.chapters[Math.floor(Math.random() * bk.chapters.length)];
-        const v = ch.verses[Math.floor(Math.random() * ch.verses.length)];
-        return { book: bk.name, chapter: ch.number, verse: v.number, text: v.text };
-    }
-
-    async getChapterText(bookNumber, chapterNumber) {
-        const verses = await this.getVerses(bookNumber, chapterNumber);
-        return verses.map(v => `${v.number}. ${v.text}`).join(' ');
     }
 }
 
-window.BibleAPI = new BibleAPI();
+// Пример автозагрузки, чтобы в HTML всё было готово
+const bible = new BibleAPI();
+bible.load().then(() => {
+    console.log("Книги:", bible.getBooks());
+});
+
 
