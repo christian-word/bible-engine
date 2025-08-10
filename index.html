@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="utf-8"><title>Bible Engine Test</title></head>
+<body>
+  <h1> Bible Engine v2 — Тест</h1>
+
+  <div>
+    <label>Книга №: <input id="book" value="1" size="3"></label>
+    <label>Глава №: <input id="chapter" value="1" size="3"></label>
+    <input id="verse" value="1" size="3">
+    <button onclick="showVerse()">Стих</button>
+  </div>
+  <div>
+    <input id="range" value="1,3,5-7" size="15">
+    <button onclick="showRange()">Диапазон</button>
+  </div>
+  <div>
+    <input id="search" placeholder="Поиск">
+    <button onclick="doSearch()">Search</button>
+  </div>
+  <div>
+    <input id="regex" placeholder="Regex \\bБог\\b">
+    <button onclick="doRegex()">Regex</button>
+  </div>
+  <div>
+    <button onclick="randomVerse()">Random Verse</button>
+  </div>
+
+  <pre id="out"></pre>
+
+  <script src="https://christian-word.github.io/bible-engine/bible-API.js"></script>
+  <script>
+    const out = document.getElementById('out');
+    function log(x) { out.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2); }
+
+    async function showVerse() {
+      const v = await BibleAPI.getVerse(book.value, chapter.value, verse.value);
+      log(v);
+    }
+    async function showRange() {
+      const r = await BibleAPI.getVersesRange(book.value, chapter.value, range.value);
+      log(r);
+    }
+    async function doSearch() {
+      const r = await BibleAPI.search(search.value);
+      log(r.slice(0, 20));
+    }
+    async function doRegex() {
+      const r = await BibleAPI.searchRegex(regex.value);
+      log(r.slice(0,20));
+    }
+    async function randomVerse() {
+      const r = await BibleAPI.getRandomVerse();
+      log(r);
+    }
+  </script>
+</body></html>
 
