@@ -7,7 +7,7 @@
 
     determineJsonUrl() {
         const src = document.currentScript?.src || '';
-        if (src.includes('christian-word.github.io/bible-engine/')) {
+        if (src.includes('raw.githubusercontent.com/christian-word/bible-engine/main/')) {
             return src.replace(/[^\/]+$/, '') + 'bible_ua.json';
         }
         return './bible_ua.json';
@@ -109,3 +109,4 @@
 }
 
 window.BibleAPI = new BibleAPI();
+
