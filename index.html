@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Bible API Demo</title>
+<script src="bible-API.js"></script>
+<style>
+body { font-family: Arial; margin: 20px; }
+section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+input, select { padding: 5px; margin: 5px 0; }
+button { padding: 5px 10px; }
+</style>
+</head>
+<body>
+<h1>Тест Bible API</h1>
+
+<section>
+<h2>1. Список книг</h2>
+<button onclick="showBooks()">Показати книги</button>
+<div id="bookList"></div>
+</section>
+
+<section>
+<h2>2. Отримати вірш</h2>
+Книга: <input id="bookNum" type="number" min="1">
+Глава: <input id="chapterNum" type="number" min="1">
+Вірш: <input id="verseNum" type="number" min="1">
+<button onclick="getVerse()">Показати</button>
+<div id="verseOutput"></div>
+</section>
+
+<section>
+<h2>3. Пошук</h2>
+<input id="searchQuery" placeholder="Пошук...">
+<button onclick="searchBible()">Шукати</button>
+<div id="searchResults"></div>
+</section>
+
+<section>
+<h2>4. Випадковий вірш</h2>
+<button onclick="randomVerse()">Показати випадковий</button>
+<div id="randomVerse"></div>
+</section>
+
+<script>
+bible.onReady(() => {
+    console.log("Bible API готова");
+});
+
+function showBooks() {
+    const books = bible.getBooks();
+    document.getElementById("bookList").innerHTML = books.map(b => `${b.number}. ${b.name}`).join("<br>");
+}
+
+function getVerse() {
+    const b = parseInt(document.getElementById("bookNum").value);
+    const c = parseInt(document.getElementById("chapterNum").value);
+    const v = parseInt(document.getElementById("verseNum").value);
+    const verse = bible.getVerse(b, c, v);
+    document.getElementById("verseOutput").innerHTML = verse || "Не знайдено";
+}
+
+function searchBible() {
+    const query = document.getElementById("searchQuery").value;
+    const results = bible.search(query);
+    document.getElementById("searchResults").innerHTML = results.map(r => `<b>${r.book} ${r.chapter}:${r.verse}</b> — ${r.text}`).join("<br>");
+}
+
+function randomVerse() {
+    const r = bible.getRandomVerse();
+    document.getElementById("randomVerse").innerHTML = `<b>${r.book} ${r.chapter}:${r.verse}</b> — ${r.text}`;
+}
+</script>
+</body>
+</html>
