@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Bible Engine Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        h1 { text-align: center; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        select, input, button { margin: 5px; padding: 5px; }
+        pre { background: #eee; padding: 10px; border-radius: 5px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 Bible Engine Demo</h1>
+
+        <h2>1. Список книг</h2>
+        <button onclick="showBooks()">Показати книги</button>
+        <pre id="books"></pre>
+
+        <h2>2. Список глав</h2>
+        <input type="number" id="bookNumChapters" placeholder="Номер книги">
+        <button onclick="showChapters()">Показати глави</button>
+        <pre id="chapters"></pre>
+
+        <h2>3. Список віршів</h2>
+        <input type="number" id="bookNumVerses" placeholder="Номер книги">
+        <input type="number" id="chapterNumVerses" placeholder="Номер глави">
+        <button onclick="showVerses()">Показати вірші</button>
+        <pre id="verses"></pre>
+
+        <h2>4. Конкретний вірш</h2>
+        <input type="number" id="bookNumVerse" placeholder="Номер книги">
+        <input type="number" id="chapterNumVerse" placeholder="Номер глави">
+        <input type="number" id="verseNum" placeholder="Номер вірша">
+        <button onclick="showVerse()">Показати вірш</button>
+        <pre id="verse"></pre>
+
+        <h2>5. Діапазон віршів</h2>
+        <input type="number" id="bookNumRange" placeholder="Номер книги">
+        <input type="number" id="chapterNumRange" placeholder="Номер глави">
+        <input type="number" id="startVerse" placeholder="Початок">
+        <input type="number" id="endVerse" placeholder="Кінець">
+        <button onclick="showVerseRange()">Показати діапазон</button>
+        <pre id="verseRange"></pre>
+
+        <h2>6. Пошук</h2>
+        <input type="text" id="searchQuery" placeholder="Пошуковий запит">
+        <button onclick="searchBible()">Шукати</button>
+        <pre id="searchResults"></pre>
+    </div>
+
+    <script src="https://christian-word.github.io/bible-engine/bible-API.js"></script>
+    <script>
+        bible.load().then(() => {
+            console.log("API готове до роботи");
+        });
+
+        function showBooks() {
+            document.getElementById("books").textContent = JSON.stringify(bible.getBooks(), null, 2);
+        }
+
+        function showChapters() {
+            let bookNum = document.getElementById("bookNumChapters").value;
+            document.getElementById("chapters").textContent = JSON.stringify(bible.getChapters(bookNum), null, 2);
+        }
+
+        function showVerses() {
+            let b = document.getElementById("bookNumVerses").value;
+            let c = document.getElementById("chapterNumVerses").value;
+            document.getElementById("verses").textContent = JSON.stringify(bible.getVerses(b, c), null, 2);
+        }
+
+        function showVerse() {
+            let b = document.getElementById("bookNumVerse").value;
+            let c = document.getElementById("chapterNumVerse").value;
+            let v = document.getElementById("verseNum").value;
+            document.getElementById("verse").textContent = JSON.stringify(bible.getVerse(b, c, v), null, 2);
+        }
+
+        function showVerseRange() {
+            let b = document.getElementById("bookNumRange").value;
+            let c = document.getElementById("chapterNumRange").value;
+            let s = parseInt(document.getElementById("startVerse").value);
+            let e = parseInt(document.getElementById("endVerse").value);
+            document.getElementById("verseRange").textContent = JSON.stringify(bible.getVerseRange(b, c, s, e), null, 2);
+        }
+
+        function searchBible() {
+            let query = document.getElementById("searchQuery").value;
+            document.getElementById("searchResults").textContent = JSON.stringify(bible.search(query), null, 2);
+        }
+    </script>
+</body>
+</html>
